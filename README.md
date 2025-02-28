@@ -1,2 +1,13 @@
-# ecommerce-app
-Spring Boot, Spring Security, JWT, Spring Data JPA, MySQL, Docker, Swagger, DTO, Design Patterns, Lombok, ModelMapper
+## 🛠 Technologies & Patterns
+- **Spring Security** - Authentication & Authorization System  
+- **JWT (Java Web Token)** - Secure Token-based Authentication  
+- **Spring Data JPA** - Object-Relational Mapping & Database Operations  
+- **MySQL** - Relational Database Management  
+- **Docker** - Containerization & Deployment  
+- **Swagger** - Interactive API Documentation  
+- **Lombok** - Code Simplification & Boilerplate Reduction  
+- **ModelMapper** - Seamless DTO-Entity Conversions  
+- **DTO Pattern** - Secure Data Transfer Between Layers  
+- **Layered Architecture** - Separation of Concerns (Controller-Service-Repository)  
+- **Factory Pattern** - Flexible Object Creation Strategy  
+- **Singleton Pattern** - Controlled Instance Management
