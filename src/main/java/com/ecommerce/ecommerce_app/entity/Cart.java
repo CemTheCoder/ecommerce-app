@@ -25,7 +25,6 @@ public class Cart {
     @JoinColumn(name = "user_id")
     private User user;
 
-    // CascadeType.ALL ekleyip orphanRemoval aktif ediyoruz
     @OneToMany(
             mappedBy = "cart",
             cascade = CascadeType.ALL,

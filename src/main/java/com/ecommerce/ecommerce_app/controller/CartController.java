@@ -23,6 +23,11 @@ public class CartController {
         return this.cartService.getCart(id);
     }
 
+    @GetMapping("/cart/user/{id}")
+    public CartDTO getUserCart(@PathVariable int id) {
+        return this.cartService.getByUserId(id);
+    }
+
     @GetMapping("/cart")
     public List<CartDTO> getCarts() {
         return this.cartService.getCarts();

@@ -58,14 +58,24 @@ public class CartItemService {
     }
 
     public CartItemDTO createCartItem(CartItemDTO cartItemDTO) {
+        Cart cart = cartRepository.findById(cartItemDTO.getCart().getId())
+                .orElseThrow(() -> new RuntimeException("Cart not found"));
+        Product product = productRepository.findById(cartItemDTO.getProduct().getId())
+                .orElseThrow(() -> new RuntimeException("Product not found"));
 
         CartItem cartItem = new CartItem();
-        cartItem.setCart(modelMapper.map(cartItemDTO.getCart(), Cart.class));
-        cartItem.setProduct(modelMapper.map(cartItemDTO.getProduct(), Product.class));
+        cartItem.setCart(cart);
+        cartItem.setProduct(product);
         cartItem.setQuantity(cartItemDTO.getQuantity());
-        cartItem.setPrice(cartItemDTO.getPrice());
-
+        cartItem.setPrice(product.getPrice() * cartItemDTO.getQuantity());
         CartItem savedCartItem = cartItemRepository.save(cartItem);
+        if(cart.getTotalPrice() != null) {
+            cart.setTotalPrice(cart.getTotalPrice() + product.getPrice() * cartItemDTO.getQuantity());
+        }
+        if(cart.getTotalPrice() == null) {
+            cart.setTotalPrice(product.getPrice() * cartItemDTO.getQuantity());
+        }
+        this.cartRepository.save(cart);
         return convertToDTO(savedCartItem);
     }
 
@@ -85,9 +95,7 @@ public class CartItemService {
             cartItem.setQuantity(cartItemDTO.getQuantity());
         }
 
-        if(cartItemDTO.getPrice() != null) {
-            cartItem.setPrice(cartItemDTO.getPrice());
-        }
+
 
         CartItem updatedCartItem = cartItemRepository.save(cartItem);
         return convertToDTO(updatedCartItem);

@@ -15,5 +15,4 @@ public class CartItemDTO {
     private CartDTO cart;
     private ProductDTO product;
     private int quantity;
-    private Double price;
 }

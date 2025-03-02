@@ -1,9 +1,9 @@
 package com.ecommerce.ecommerce_app.service;
 
 import com.ecommerce.ecommerce_app.dto.OrderDTO;
-import com.ecommerce.ecommerce_app.entity.Order;
-import com.ecommerce.ecommerce_app.entity.OrderItem;
-import com.ecommerce.ecommerce_app.entity.User;
+import com.ecommerce.ecommerce_app.dto.UserDTO;
+import com.ecommerce.ecommerce_app.entity.*;
+import com.ecommerce.ecommerce_app.repository.CartRepository;
 import com.ecommerce.ecommerce_app.repository.OrderItemRepository;
 import com.ecommerce.ecommerce_app.repository.OrderRepository;
 import com.ecommerce.ecommerce_app.repository.UserRepository;
@@ -13,6 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Type;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -21,15 +24,18 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
+    private final CartRepository cartRepository;
 
     @Autowired
     public OrderService(OrderRepository orderRepository,
                         UserRepository userRepository,
                         ModelMapper modelMapper,
-                        OrderItemRepository orderItemRepository) {
+                        OrderItemRepository orderItemRepository,
+                        CartRepository cartRepository) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.modelMapper = modelMapper;
+        this.cartRepository = cartRepository;
     }
 
     public Order convertToEntity(OrderDTO orderDTO) {
@@ -53,15 +59,40 @@ public class OrderService {
                 .toList();
     }
 
+
     public OrderDTO createOrder(OrderDTO orderDTO) {
-        Order order = new Order();
-        order.setUser(modelMapper.map(orderDTO.getUser(), User.class));
-        if(orderDTO.getOrderItems() != null) {
-            Type listType = new TypeToken<List<OrderItem>>() {}.getType();
-            order.setOrderItems(modelMapper.map(orderDTO.getOrderItems(), listType));
+        User user = this.userRepository.findById(orderDTO.getUser().getId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Cart cart = this.cartRepository.findByUserId(orderDTO.getUser().getId())
+            .orElseThrow(() -> new RuntimeException("Cart not found"));
+
+
+        if (cart == null || cart.getCartItems().isEmpty()) {
+            throw new RuntimeException("Cart is empty");
         }
-        order.setTotalPrice(orderDTO.getTotalPrice());
-        Order savedOrder = this.orderRepository.save(order);
+
+        Order order = new Order();
+        order.setUser(user);
+        order.setStatus("Pending");
+        order.setOrderDate(LocalDateTime.now());
+        order.setTotalPrice(cart.getTotalPrice());
+        order.setOrderItems(new ArrayList<>());
+
+        for (CartItem cartItem : cart.getCartItems()) {
+            OrderItem orderItem = new OrderItem();
+            orderItem.setProduct(cartItem.getProduct());
+            orderItem.setPrice(cartItem.getPrice());
+            orderItem.setQuantity(cartItem.getQuantity());
+            orderItem.setOrder(order);
+            order.getOrderItems().add(orderItem);
+        }
+
+        Order savedOrder = orderRepository.save(order);
+
+        cart.getCartItems().clear();
+        cart.setTotalPrice(0.0);
+        cartRepository.save(cart);
+
         return convertToDTO(savedOrder);
     }
 

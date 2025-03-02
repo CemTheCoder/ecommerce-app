@@ -3,7 +3,9 @@ package com.ecommerce.ecommerce_app.service;
 import com.ecommerce.ecommerce_app.dto.CreateUserDTO;
 import com.ecommerce.ecommerce_app.dto.UpdateUserDTO;
 import com.ecommerce.ecommerce_app.dto.UserDTO;
+import com.ecommerce.ecommerce_app.entity.Cart;
 import com.ecommerce.ecommerce_app.entity.User;
+import com.ecommerce.ecommerce_app.repository.CartRepository;
 import com.ecommerce.ecommerce_app.repository.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,14 +21,18 @@ public class UserService {
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
+    private final CartRepository cartRepository;
+
 
     @Autowired
     public UserService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
-                       ModelMapper modelMapper) {
+                       ModelMapper modelMapper,
+                       CartRepository cartRepository) {
         this.userRepository = userRepository;
         this.modelMapper = modelMapper;
         this.passwordEncoder = passwordEncoder;
+        this.cartRepository = cartRepository;
     }
 
     public User convertToEntity(CreateUserDTO createUserDTO) {
@@ -58,6 +64,11 @@ public class UserService {
         System.out.println("Encoded Password: " + encodedPassword);
         user.setPassword(encodedPassword);
         User savedUser = userRepository.save(user);
+        Cart cart = new Cart();
+        cart.setUser(user);
+        cart.setTotalPrice(0d);
+        this.cartRepository.save(cart);
+
         return convertToDTO(savedUser);
     }
 

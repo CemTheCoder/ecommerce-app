@@ -96,7 +96,7 @@ public class CartService {
 
     public void deleteCart(int cartId) {
         Cart cart = cartRepository.findById(cartId)
-                .orElseThrow(() -> new RuntimeException("Cart bulunamadı!"));
+                .orElseThrow(() -> new RuntimeException("Cart not found!"));
 
         if(cart.getUser() != null){
             User user = cart.getUser();
@@ -107,5 +107,11 @@ public class CartService {
         cart.getCartItems().clear();
 
         cartRepository.delete(cart);
+    }
+
+    public CartDTO getByUserId(int id) {
+        Cart cart = this.cartRepository.findByUserId(id)
+                        .orElseThrow(() -> new RuntimeException("Cart not found!"));
+        return convertToDTO(cart);
     }
 }
